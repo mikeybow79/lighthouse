@@ -9,7 +9,7 @@ import defaultConfig from '../../config/default-config.js';
 import {Audit as BaseAudit} from '../../audits/audit.js';
 import BaseGatherer from '../../gather/base-gatherer.js';
 import * as validation from '../../config/validation.js';
-import {initializeConfig} from '../../config/config.js';
+import LinkElements from '../../gather/gatherers/link-elements.js';
 
 /** @typedef {LH.Gatherer.GathererMeta['supportedModes']} SupportedModes */
 
@@ -30,20 +30,6 @@ beforeEach(() => {
 });
 
 describe('Config Validation', () => {
-  describe('assertValidConfig', () => {
-    it('should throw if multiple artifacts have the same id', async () => {
-      const {resolvedConfig} = await initializeConfig('navigation');
-      if (!resolvedConfig.artifacts) throw new Error('No config artifacts');
-
-      const imageElArtifact = resolvedConfig.artifacts.find(a => a.id === 'ImageElements');
-      if (!imageElArtifact) throw new Error('Could not find ImageElements artifact');
-
-      resolvedConfig.artifacts.push(imageElArtifact);
-
-      expect(() => validation.assertValidConfig(resolvedConfig)).toThrow(/Config defined multiple/);
-    });
-  });
-
   describe('isValidArtifactDependency', () => {
     /** @type {Array<{dependent: SupportedModes, dependency: SupportedModes, isValid: boolean}>} */
     const combinations = [
@@ -81,6 +67,33 @@ describe('Config Validation', () => {
       config.categories = {...defaultConfig.categories, 'lighthouse-plugin-test': category};
       const invocation = () => validation.assertValidPluginName(config, 'lighthouse-plugin-test');
       expect(invocation).toThrow(/not allowed because.*already found/);
+    });
+  });
+
+  describe('.assertValidArtifacts', () => {
+    it('should throw if multiple artifacts have the same id', async () => {
+      const artifacts = [
+        {id: 'Artifact1', gatherer: {instance: new BaseGatherer()}},
+        {id: 'Artifact1', gatherer: {instance: new BaseGatherer()}},
+      ];
+      const invocation = () => validation.assertValidArtifacts(artifacts);
+      expect(invocation).toThrow(/Config defined multiple/);
+    });
+
+    it('should throw if dependencies are out of order', async () => {
+      const dependentGatherer = new LinkElements();
+
+      /** @type {LH.Config.AnyArtifactDefn[]} */
+      const artifacts = [
+        {
+          id: 'LinkElements',
+          gatherer: {instance: dependentGatherer},
+          dependencies: {DevtoolsLog: {id: 'DevtoolsLog'}},
+        },
+        {id: 'DevtoolsLog', gatherer: {instance: new BaseGatherer()}},
+      ];
+      const invocation = () => validation.assertValidArtifacts(artifacts);
+      expect(invocation).toThrow(/Failed to find dependency/);
     });
   });
 

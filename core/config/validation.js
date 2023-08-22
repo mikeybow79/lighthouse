@@ -186,14 +186,19 @@ function assertValidSettings(settings) {
 }
 
 /**
- * Asserts that artifacts are in a valid dependency order that can be computed.
+ * Asserts that artifacts are unique, valid and are in a dependency order that can be computed.
  *
  * @param {Array<LH.Config.AnyArtifactDefn>} artifactDefns
  */
-function assertArtifactTopologicalOrder(artifactDefns) {
+function assertValidArtifacts(artifactDefns) {
+  /** @type {Set<string>} */
   const availableArtifacts = new Set();
 
   for (const artifact of artifactDefns) {
+    if (availableArtifacts.has(artifact.id)) {
+      throw new Error(`Config defined multiple artifacts with id '${artifact.id}'`);
+    }
+
     availableArtifacts.add(artifact.id);
     if (!artifact.dependencies) continue;
 
@@ -201,6 +206,8 @@ function assertArtifactTopologicalOrder(artifactDefns) {
       if (availableArtifacts.has(dependencyId)) continue;
       throwInvalidDependencyOrder(artifact.id, dependencyKey);
     }
+
+    assertValidArtifact(artifact);
   }
 }
 
@@ -209,15 +216,7 @@ function assertArtifactTopologicalOrder(artifactDefns) {
  * @return {{warnings: string[]}}
  */
 function assertValidConfig(resolvedConfig) {
-  /** @type {Set<string>} */
-  const artifactIds = new Set();
-  for (const artifactDefn of resolvedConfig.artifacts || []) {
-    if (artifactIds.has(artifactDefn.id)) {
-      throw new Error(`Config defined multiple artifacts with id '${artifactDefn.id}'`);
-    }
-    artifactIds.add(artifactDefn.id);
-    assertValidArtifact(artifactDefn);
-  }
+  assertValidArtifacts(resolvedConfig.artifacts || []);
 
   for (const auditDefn of resolvedConfig.audits || []) {
     assertValidAudit(auditDefn);
@@ -267,7 +266,7 @@ export {
   assertValidAudit,
   assertValidCategories,
   assertValidSettings,
-  assertArtifactTopologicalOrder,
+  assertValidArtifacts,
   assertValidConfig,
   throwInvalidDependencyOrder,
   throwInvalidArtifactDependency,

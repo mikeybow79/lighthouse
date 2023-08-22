@@ -387,6 +387,22 @@ describe('NavigationRunner', () => {
 
       expect(mocks.emulationMock.clearThrottling).toHaveBeenCalledTimes(1);
     });
+
+    it('throws if artifacts are missing', async () => {
+      const {resolvedConfig} = createMockConfig();
+      resolvedConfig.artifacts = null;
+
+      const artifactsPromise = runner._navigation({
+        driver,
+        page,
+        resolvedConfig,
+        requestor,
+        computedCache,
+        baseArtifacts,
+      });
+
+      await expect(artifactsPromise).rejects.toThrow('No artifacts were defined on the config');
+    });
   });
 
   describe('_navigate', () => {

@@ -15,7 +15,6 @@ import {
   throwInvalidDependencyOrder,
   isValidArtifactDependency,
   throwInvalidArtifactDependency,
-  assertArtifactTopologicalOrder,
   assertValidConfig,
 } from './validation.js';
 import {filterConfigByGatherMode, filterConfigByExplicitFilters} from './filters.js';
@@ -170,8 +169,6 @@ async function resolveArtifactsToDefns(artifacts, configDir) {
     if (symbol) artifactDefnsBySymbol.set(symbol, artifact);
     artifactDefns.push(artifact);
   }
-
-  assertArtifactTopologicalOrder(artifactDefns);
 
   log.timeEnd(status);
   return artifactDefns;
