@@ -4,7 +4,7 @@
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
-import {defaultSettings, defaultNavigationConfig} from '../../config/constants.js';
+import {defaultSettings} from '../../config/constants.js';
 import defaultConfig from '../../config/default-config.js';
 import {Audit as BaseAudit} from '../../audits/audit.js';
 import BaseGatherer from '../../gather/base-gatherer.js';
@@ -111,29 +111,6 @@ describe('Config Validation', () => {
       const artifactDefn = {id: 'NewArtifact', gatherer: gathererDefn};
       const invocation = () => validation.assertValidArtifact(artifactDefn);
       expect(invocation).toThrow(/did not define.*getArtifact/);
-    });
-  });
-
-  describe('.assertValidNavigations', () => {
-    it('should add warning if navigations uses non-fatal loadFailureMode', () => {
-      /** @type {Array<LH.Config.NavigationDefn>} */
-      const navigations = [{...defaultNavigationConfig, loadFailureMode: 'warn', artifacts: []}];
-      const {warnings} = validation.assertValidNavigations(navigations);
-      expect(warnings).toHaveLength(1);
-      expect(warnings[0]).toContain('but had a failure mode');
-      expect(navigations[0].loadFailureMode).toEqual('fatal');
-    });
-
-
-    it('should throw if navigations do not have unique ids', () => {
-      /** @type {Array<LH.Config.NavigationDefn>} */
-      const navigations = [
-        {...defaultNavigationConfig, id: 'first', artifacts: []},
-        {...defaultNavigationConfig, id: 'second', artifacts: []},
-        {...defaultNavigationConfig, id: 'first', artifacts: []},
-      ];
-      const invocation = () => validation.assertValidNavigations(navigations);
-      expect(invocation).toThrow(/must have unique.*but "first" was repeated/);
     });
   });
 
