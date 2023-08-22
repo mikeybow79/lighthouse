@@ -119,8 +119,7 @@ async function prepareThrottlingAndNetwork(session, settings) {
   const status = {msg: 'Preparing network conditions', id: `lh:gather:prepareThrottlingAndNetwork`};
   log.time(status);
 
-  if (settings.throttlingMethod === 'provided') await emulation.clearThrottling(session);
-  else await emulation.throttle(session, settings);
+  await emulation.throttle(session, settings);
 
   // Set request blocking before any network activity.
   // No "clearing" is done at the end of the recording since Network.setBlockedURLs([]) will unset all if

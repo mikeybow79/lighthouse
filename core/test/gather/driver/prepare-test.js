@@ -88,9 +88,10 @@ describe('.prepareThrottlingAndNetwork()', () => {
       uploadThroughput: 0,
       offline: false,
     });
-    expect(sessionMock.sendCommand.findInvocation('Emulation.setCPUThrottlingRate')).toEqual({
-      rate: 1,
-    });
+
+    // CPU throttling is intentionally not cleared.
+    expect(sessionMock.sendCommand.findAllInvocations('Emulation.setCPUThrottlingRate'))
+      .toHaveLength(0);
   });
 
   it('unsets url patterns when empty', async () => {
