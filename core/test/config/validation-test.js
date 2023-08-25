@@ -72,9 +72,13 @@ describe('Config Validation', () => {
 
   describe('.assertValidArtifacts', () => {
     it('should throw if multiple artifacts have the same id', async () => {
+      const instance = new BaseGatherer();
+      instance.meta.supportedModes = ['navigation'];
+      instance.getArtifact = () => {};
+
       const artifacts = [
-        {id: 'Artifact1', gatherer: {instance: new BaseGatherer()}},
-        {id: 'Artifact1', gatherer: {instance: new BaseGatherer()}},
+        {id: 'Artifact1', gatherer: {instance}},
+        {id: 'Artifact1', gatherer: {instance}},
       ];
       const invocation = () => validation.assertValidArtifacts(artifacts);
       expect(invocation).toThrow(/Config defined multiple/);
