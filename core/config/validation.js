@@ -195,6 +195,8 @@ function assertValidArtifacts(artifactDefns) {
   const availableArtifacts = new Set();
 
   for (const artifact of artifactDefns) {
+    assertValidArtifact(artifact);
+
     if (availableArtifacts.has(artifact.id)) {
       throw new Error(`Config defined multiple artifacts with id '${artifact.id}'`);
     }
@@ -206,8 +208,6 @@ function assertValidArtifacts(artifactDefns) {
       if (availableArtifacts.has(dependencyId)) continue;
       throwInvalidDependencyOrder(artifact.id, dependencyKey);
     }
-
-    assertValidArtifact(artifact);
   }
 }
 
