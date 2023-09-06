@@ -33,7 +33,7 @@ describe('#getNetworkError', () => {
    * @param {NetworkRequest=} mainRecord
    */
   function getAndExpectError(mainRecord) {
-    const error = getNetworkError(mainRecord);
+    const error = getNetworkError(mainRecord, {warnings: []});
     if (!error) throw new Error('expected a network error');
     return error;
   }
@@ -42,7 +42,7 @@ describe('#getNetworkError', () => {
     const url = 'http://the-page.com';
     const mainRecord = makeNetworkRequest();
     mainRecord.url = url;
-    expect(getNetworkError(mainRecord)).toBeUndefined();
+    expect(getNetworkError(mainRecord, {warnings: []})).toBeUndefined();
   });
 
   it('fails when page fails to load', () => {
@@ -66,15 +66,22 @@ describe('#getNetworkError', () => {
     expect(error.friendlyMessage).toBeDisplayString(/^Lighthouse was unable to reliably load/);
   });
 
-  it('fails when page returns with a 404', () => {
+  it('warns when page returns with a 404', () => {
     const url = 'http://the-page.com';
     const mainRecord = makeNetworkRequest();
     mainRecord.url = url;
     mainRecord.statusCode = 404;
-    const error = getAndExpectError(mainRecord);
-    expect(error.message).toEqual('ERRORED_DOCUMENT_REQUEST');
-    expect(error.code).toEqual('ERRORED_DOCUMENT_REQUEST');
-    expect(error.friendlyMessage).toBeDisplayString(/^Lighthouse was unable to reliably load.*404/);
+    const context = {
+      url,
+      networkRecords: [mainRecord],
+      warnings: [],
+      loadFailureMode: LoadFailureMode.warn,
+    };
+
+    const error = getPageLoadError(undefined, context);
+    expect(error).toBeUndefined();
+    expect(context.warnings[0]).toBeDisplayString(
+      'The page returns a 404. Lighthouse is unable to reliably load this page.');
   });
 
   it('fails when page returns with a 500', () => {

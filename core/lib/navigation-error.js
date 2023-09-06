@@ -16,6 +16,11 @@ const UIStrings = {
    */
   warningXhtml:
     'The page MIME type is XHTML: Lighthouse does not explicitly support this document type',
+  /**
+   * Warning shown in report when the page under test responds with a 404, which Lighthouse is not able to reliably load
+   * so we display a warning.
+   */
+  warning404: 'The page returns a 404. Lighthouse is unable to reliably load this page.',
 };
 
 const str_ = i18n.createIcuMessageFn(import.meta.url, UIStrings);
@@ -27,9 +32,10 @@ const XHTML_MIME_TYPE = 'application/xhtml+xml';
 /**
  * Returns an error if the original network request failed or wasn't found.
  * @param {LH.Artifacts.NetworkRequest|undefined} mainRecord
+ * @param {{warnings: Array<string | LH.IcuMessage>}} context
  * @return {LH.LighthouseError|undefined}
  */
-function getNetworkError(mainRecord) {
+function getNetworkError(mainRecord, context) {
   if (!mainRecord) {
     return new LighthouseError(LighthouseError.errors.NO_DOCUMENT_REQUEST);
   } else if (mainRecord.failed) {
@@ -46,6 +52,8 @@ function getNetworkError(mainRecord) {
       return new LighthouseError(
         LighthouseError.errors.FAILED_DOCUMENT_REQUEST, {errorDetails: netErr});
     }
+  } else if (mainRecord.statusCode === 404) {
+    context.warnings.push(str_(UIStrings.warning404));
   } else if (mainRecord.hasErrorStatusCode()) {
     return new LighthouseError(LighthouseError.errors.ERRORED_DOCUMENT_REQUEST, {
       statusCode: `${mainRecord.statusCode}`,
@@ -144,7 +152,7 @@ function getPageLoadError(navigationError, context) {
     context.warnings.push(str_(UIStrings.warningXhtml));
   }
 
-  const networkError = getNetworkError(mainRecord);
+  const networkError = getNetworkError(mainRecord, context);
   const interstitialError = getInterstitialError(mainRecord, networkRecords);
   const nonHtmlError = getNonHtmlError(finalRecord);
 
