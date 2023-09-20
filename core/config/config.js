@@ -218,7 +218,7 @@ function overrideThrottlingWindows(settings) {
  * @param {LH.Gatherer.GatherMode} gatherMode
  * @param {LH.Config=} config
  * @param {LH.Flags=} flags
- * @return {Promise<{resolvedConfig: LH.Config.ResolvedConfig, warnings: string[]}>}
+ * @return {Promise<{resolvedConfig: LH.Config.ResolvedConfig}>}
  */
 async function initializeConfig(gatherMode, config, flags = {}) {
   const status = {msg: 'Initialize config', id: 'lh:config'};
@@ -244,13 +244,13 @@ async function initializeConfig(gatherMode, config, flags = {}) {
     settings,
   };
 
-  const {warnings} = assertValidConfig(resolvedConfig);
+  assertValidConfig(resolvedConfig);
 
   resolvedConfig = filterConfigByGatherMode(resolvedConfig, gatherMode);
   resolvedConfig = filterConfigByExplicitFilters(resolvedConfig, settings);
 
   log.timeEnd(status);
-  return {resolvedConfig, warnings};
+  return {resolvedConfig};
 }
 
 /**

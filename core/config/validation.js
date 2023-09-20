@@ -213,7 +213,6 @@ function assertValidArtifacts(artifactDefns) {
 
 /**
  * @param {LH.Config.ResolvedConfig} resolvedConfig
- * @return {{warnings: string[]}}
  */
 function assertValidConfig(resolvedConfig) {
   assertValidArtifacts(resolvedConfig.artifacts || []);
@@ -224,9 +223,6 @@ function assertValidConfig(resolvedConfig) {
 
   assertValidCategories(resolvedConfig.categories, resolvedConfig.audits, resolvedConfig.groups);
   assertValidSettings(resolvedConfig.settings);
-
-  // Currently no warnings are available, but leaving this here if we ever decide to introduce any.
-  return {warnings: []};
 }
 
 /**

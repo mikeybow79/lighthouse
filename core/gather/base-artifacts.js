@@ -64,15 +64,16 @@ function deduplicateWarnings(warnings) {
  * @return {LH.Artifacts}
  */
 function finalizeArtifacts(baseArtifacts, gathererArtifacts) {
-  const warnings = baseArtifacts.LighthouseRunWarnings
-    .concat(getEnvironmentWarnings({settings: baseArtifacts.settings, baseArtifacts}));
+  baseArtifacts.LighthouseRunWarnings.push(
+    ...getEnvironmentWarnings({settings: baseArtifacts.settings, baseArtifacts})
+  );
 
   // Cast to remove the partial from gathererArtifacts.
   const artifacts = /** @type {LH.Artifacts} */ ({...baseArtifacts, ...gathererArtifacts});
 
   // Set the post-run meta artifacts.
   artifacts.Timing = log.getTimeEntries();
-  artifacts.LighthouseRunWarnings = deduplicateWarnings(warnings);
+  artifacts.LighthouseRunWarnings = deduplicateWarnings(baseArtifacts.LighthouseRunWarnings);
 
   if (artifacts.PageLoadError && !artifacts.URL.finalDisplayedUrl) {
     artifacts.URL.finalDisplayedUrl = artifacts.URL.requestedUrl || '';
