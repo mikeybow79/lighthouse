@@ -48,7 +48,13 @@ async function _setup({driver, resolvedConfig, requestor}) {
 
   // We can't trigger the navigation through user interaction if we reset the page before starting.
   if (typeof requestor === 'string' && !resolvedConfig.settings.skipAboutBlank) {
+    // Disable network monitor on the blank page to prevent it from picking up network requests and
+    // frame navigated events before the run starts.
+    await driver._networkMonitor?.disable();
+
     await gotoURL(driver, resolvedConfig.settings.blankPage, {waitUntil: ['navigated']});
+
+    await driver._networkMonitor?.enable();
   }
 
   const baseArtifacts = await getBaseArtifacts(resolvedConfig, driver, {gatherMode: 'navigation'});
