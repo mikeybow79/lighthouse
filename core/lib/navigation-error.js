@@ -20,7 +20,9 @@ const UIStrings = {
    * Warning shown in report when the page under test responds with a 404, which Lighthouse is not able to reliably load
    * so we display a warning.
    */
-  warning404: 'The page returns a 404. Lighthouse is unable to reliably load this page.',
+  warning404: 'Lighthouse was unable to reliably load the page you requested. Make sure' +
+    ' you are testing the correct URL and that the server is properly responding' +
+    ' to all requests. (Status code: 404)',
 };
 
 const str_ = i18n.createIcuMessageFn(import.meta.url, UIStrings);
@@ -32,7 +34,7 @@ const XHTML_MIME_TYPE = 'application/xhtml+xml';
 /**
  * Returns an error if the original network request failed or wasn't found.
  * @param {LH.Artifacts.NetworkRequest|undefined} mainRecord
- * @param {{warnings: Array<string | LH.IcuMessage>}} context
+ * @param {{warnings: Array<string | LH.IcuMessage>, ignoreStatusCode?: LH.Config.Settings['ignoreStatusCode']}} context
  * @return {LH.LighthouseError|undefined}
  */
 function getNetworkError(mainRecord, context) {
@@ -52,7 +54,7 @@ function getNetworkError(mainRecord, context) {
       return new LighthouseError(
         LighthouseError.errors.FAILED_DOCUMENT_REQUEST, {errorDetails: netErr});
     }
-  } else if (mainRecord.statusCode === 404) {
+  } else if (mainRecord.statusCode === 404 && context.ignoreStatusCode) {
     context.warnings.push(str_(UIStrings.warning404));
   } else if (mainRecord.hasErrorStatusCode()) {
     return new LighthouseError(LighthouseError.errors.ERRORED_DOCUMENT_REQUEST, {
@@ -121,7 +123,7 @@ function getNonHtmlError(finalRecord) {
  * Returns an error if the page load should be considered failed, e.g. from a
  * main document request failure, a security issue, etc.
  * @param {LH.LighthouseError|undefined} navigationError
- * @param {{url: string, loadFailureMode: LH.Config.SharedPassNavigationJson['loadFailureMode'], networkRecords: Array<LH.Artifacts.NetworkRequest>, warnings: Array<string | LH.IcuMessage>}} context
+ * @param {{url: string, loadFailureMode: LH.Config.SharedPassNavigationJson['loadFailureMode'], ignoreStatusCode?: LH.Config.Settings['ignoreStatusCode'], networkRecords: Array<LH.Artifacts.NetworkRequest>, warnings: Array<string | LH.IcuMessage>}} context
  * @return {LH.LighthouseError|undefined}
  */
 function getPageLoadError(navigationError, context) {

@@ -175,6 +175,7 @@ async function _computeNavigationResult(
     ? getPageLoadError(navigationError, {
       url: mainDocumentUrl,
       loadFailureMode: navigationContext.navigation.loadFailureMode,
+      ignoreStatusCode: navigationContext.resolvedConfig.settings.ignoreStatusCode,
       networkRecords: debugData.records,
       warnings,
     })
