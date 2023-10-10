@@ -54,12 +54,14 @@ function getNetworkError(mainRecord, context) {
       return new LighthouseError(
         LighthouseError.errors.FAILED_DOCUMENT_REQUEST, {errorDetails: netErr});
     }
-  } else if (mainRecord.statusCode === 404 && context.ignoreStatusCode) {
-    context.warnings.push(str_(UIStrings.warning404));
   } else if (mainRecord.hasErrorStatusCode()) {
-    return new LighthouseError(LighthouseError.errors.ERRORED_DOCUMENT_REQUEST, {
-      statusCode: `${mainRecord.statusCode}`,
-    });
+    if ( context.ignoreStatusCode) {
+      context.warnings.push(str_(UIStrings.warning404));
+    } else {
+      return new LighthouseError(LighthouseError.errors.ERRORED_DOCUMENT_REQUEST, {
+        statusCode: `${mainRecord.statusCode}`,
+      });
+    }
   }
 }
 

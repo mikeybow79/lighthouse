@@ -104,7 +104,7 @@ describe('#getNetworkError', () => {
     expect(error.friendlyMessage).toBeDisplayString(/^Lighthouse was unable to reliably load/);
   });
 
-  it('fails when page returns with a 500', () => {
+  it('fails when page returns with a 500 without flag', () => {
     const url = 'http://the-page.com';
     const mainRecord = makeNetworkRequest();
     mainRecord.url = url;
