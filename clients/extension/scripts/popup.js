@@ -7,7 +7,6 @@
 import * as SettingsController from './settings-controller.js';
 
 const VIEWER_URL = 'https://googlechrome.github.io/lighthouse/viewer/';
-const optionsVisibleClass = 'main--options-visible';
 // Replaced with 'chrome' or 'firefox' in the build script.
 /** @type {string} */
 const BROWSER_BRAND = '___BROWSER_BRAND___';
@@ -151,10 +150,7 @@ async function initPopup() {
   const browserBrandEl = find(`.browser-brand--${BROWSER_BRAND}`);
   browserBrandEl.classList.remove('hidden');
 
-  const mainEl = find('main');
-  const optionsEl = find('.button--configure');
   const generateReportButton = find('button.button--generate');
-  const configureButton = find('button.button--configure');
   const psiDisclaimerEl = find('.psi-disclaimer');
   const errorMessageEl = find('.errormsg');
   const optionsFormEl = find('.options__form');
@@ -171,7 +167,6 @@ async function initPopup() {
     // but it's very hard to keep an extension popup alive during a popup
     // so we don't need to handle reacting to it.
     generateReportButton.disabled = true;
-    configureButton.disabled = true;
     psiDisclaimerEl.remove();
     errorMessageEl.textContent = err.message;
     return;
@@ -184,10 +179,6 @@ async function initPopup() {
 
   generateReportButton.addEventListener('click', () => {
     onGenerateReportButtonClick(siteUrl.href, settings);
-  });
-
-  optionsEl.addEventListener('click', () => {
-    mainEl.classList.toggle(optionsVisibleClass);
   });
 
   optionsFormEl.addEventListener('change', () => {
