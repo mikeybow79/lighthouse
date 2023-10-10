@@ -105,6 +105,10 @@ main {
   padding-bottom: 10px;
 }
 
+.options__group:first-child {
+  width: 100%;
+}
+
 .section-header {
   font-size: var(--font-size);
   font-weight: 500;
@@ -133,7 +137,8 @@ main {
 
 .options__form {
   display: flex;
-  justify-content: space-around;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .options__title {

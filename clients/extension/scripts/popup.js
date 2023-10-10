@@ -6,7 +6,6 @@
 
 import * as SettingsController from './settings-controller.js';
 
-const VIEWER_URL = 'https://googlechrome.github.io/lighthouse/viewer/';
 // Replaced with 'chrome' or 'firefox' in the build script.
 /** @type {string} */
 const BROWSER_BRAND = '___BROWSER_BRAND___';
@@ -61,16 +60,53 @@ function createOptionItem(text, id, isChecked) {
 }
 
 /**
+ * @param {string} name
+ * @param {string} text
+ * @param {string} id
+ * @param {boolean} isChecked
+ * @return {HTMLLIElement}
+ */
+function createRadioItem(name, text, id, isChecked) {
+  const input = document.createElement('input');
+  input.setAttribute('type', 'radio');
+  input.setAttribute('value', id);
+  input.setAttribute('name', name);
+  if (isChecked) {
+    input.setAttribute('checked', 'checked');
+  }
+
+  const label = document.createElement('label');
+  const span = document.createElement('span');
+  span.textContent = text;
+  label.append(input, span);
+  const listItem = document.createElement('li');
+  listItem.append(label);
+
+  return listItem;
+}
+
+/**
  * Click event handler for Generate Report button.
+ * @param {string} backend
  * @param {string} url
  * @param {SettingsController.Settings} settings
  */
-function onGenerateReportButtonClick(url, settings) {
-  const apiUrl = new URL(VIEWER_URL);
-  apiUrl.searchParams.append('psiurl', url);
-  apiUrl.searchParams.append('strategy', settings.device);
-  for (const category of settings.selectedCategories) {
-    apiUrl.searchParams.append('category', category);
+function onGenerateReportButtonClick(backend, url, settings) {
+  let apiUrl;
+  if (backend === 'psi') {
+    apiUrl = new URL('https://pagespeed.web.dev/analysis');
+    apiUrl.searchParams.append('url', url);
+    apiUrl.searchParams.append('form_factor', settings.device);
+    for (const category of settings.selectedCategories) {
+      apiUrl.searchParams.append('category', category);
+    }
+  } else {
+    apiUrl = new URL('https://googlechrome.github.io/lighthouse/viewer/');
+    apiUrl.searchParams.append('psiurl', url);
+    apiUrl.searchParams.append('strategy', settings.device);
+    for (const category of settings.selectedCategories) {
+      apiUrl.searchParams.append('category', category);
+    }
   }
   apiUrl.searchParams.append('utm_source', 'lh-chrome-ext');
   window.open(apiUrl.href);
@@ -81,7 +117,7 @@ function onGenerateReportButtonClick(url, settings) {
  * for the categories.
  * @param {SettingsController.Settings} settings
  */
-function generateOptionsList(settings) {
+function generateCategoryOptionsList(settings) {
   const frag = document.createDocumentFragment();
 
   SettingsController.DEFAULT_CATEGORIES.forEach(category => {
@@ -91,6 +127,31 @@ function generateOptionsList(settings) {
 
   const optionsCategoriesList = find('.options__categories');
   optionsCategoriesList.append(frag);
+}
+
+
+/**
+ * Generates a document fragment containing a list of backends.
+ * @param {SettingsController.Settings} settings
+ */
+function generateBackendOptionsList(settings) {
+  const frag = document.createDocumentFragment();
+
+  SettingsController.BACKENDS.forEach(backend => {
+    const isChecked = settings.backend === backend.id;
+    frag.append(createRadioItem('backend', backend.title, backend.id, isChecked));
+  });
+
+  const optionsCategoriesList = find('.options__backend');
+  optionsCategoriesList.append(frag);
+}
+
+/**
+ * @param {SettingsController.Settings} settings
+ */
+function configureVisibleSettings(settings) {
+  const optionsCategoriesList = find('.options__categories');
+  optionsCategoriesList.parentElement?.classList.toggle('hidden', settings.backend === 'psi');
 }
 
 function fillDevToolsShortcut() {
@@ -106,11 +167,13 @@ function fillDevToolsShortcut() {
 function readSettingsFromDomAndPersist() {
   const optionsEl = find('.section--options');
   // Save settings when options page is closed.
+  const backend = find('.options__backend input:checked').value;
   const checkboxes = optionsEl.querySelectorAll('.options__categories input:checked');
   const selectedCategories = Array.from(checkboxes).map(input => input.value);
   const device = find('input[name="device"]:checked').value;
 
   const settings = {
+    backend,
     selectedCategories,
     device,
   };
@@ -173,16 +236,19 @@ async function initPopup() {
   }
 
   // Generate checkboxes from saved settings.
-  generateOptionsList(settings);
+  generateBackendOptionsList(settings);
+  generateCategoryOptionsList(settings);
+  configureVisibleSettings(settings);
   const selectedDeviceEl = find(`.options__device input[value="${settings.device}"]`);
   selectedDeviceEl.checked = true;
 
   generateReportButton.addEventListener('click', () => {
-    onGenerateReportButtonClick(siteUrl.href, settings);
+    onGenerateReportButtonClick(settings.backend, siteUrl.href, settings);
   });
 
   optionsFormEl.addEventListener('change', () => {
     settings = readSettingsFromDomAndPersist();
+    configureVisibleSettings(settings);
   });
 }
 
