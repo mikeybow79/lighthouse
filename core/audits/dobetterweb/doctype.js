@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {Audit} from '../audit.js';
+import { Audit } from '../audit.js';
 import * as i18n from '../../lib/i18n/i18n.js';
-import {ProcessedTrace} from '../../computed/processed-trace.js';
+import { ProcessedTrace } from '../../computed/processed-trace.js';
 
 const UIStrings = {
   /** Title of a Lighthouse audit that provides detail on the doctype of a page. This descriptive title is shown to users when the pages's doctype is set to HTML. */
@@ -129,4 +129,4 @@ class Doctype extends Audit {
 }
 
 export default Doctype;
-export {UIStrings};
+export { UIStrings };
